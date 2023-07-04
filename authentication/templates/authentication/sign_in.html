@@ -1,0 +1,53 @@
+{% extends 'authentication/base.html' %}
+
+{% load static %}
+
+{% block specific_css %}
+<link rel="stylesheet" href="{% static 'authentication/css/signin.css' %}">
+{% endblock %}
+
+{% block content %}
+
+{% if message is not None %}
+<div class="container-top">
+  <div class="row">
+    <div class="col-3" />
+    <div class="col-6">
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>{{ message }}</strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="col-3"></div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+
+<div class="container" id="cont-form">
+  <div class="form-container">
+    <h2 class="text-center mb-4">Login</h2>
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username">
+      </div>
+      <div class="mb-3">
+        <label for="loginPassword" class="form-label">Password</label>
+        <input type="password" class="form-control" id="loginPassword" name="password"
+          placeholder="Enter your password">
+      </div>
+      <button type="submit" class="btn btn-primary">Login</button>
+      <button type="button" class="btn btn-primary">
+        <a href="{% url 'authentication:register' %}" id="reg" style="color: #ffffff;text-decoration: none;">
+          Create an Account
+        </a>
+      </button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

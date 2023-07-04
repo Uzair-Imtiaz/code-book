@@ -1,0 +1,15 @@
+body {
+  background: linear-gradient(to bottom, #000080, #000033);
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.welcome-message {
+  color: #fff;
+  font-size: 24px;
+}

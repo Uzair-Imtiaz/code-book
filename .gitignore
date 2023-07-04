@@ -1,0 +1,54 @@
+# Django specific files
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+media/
+
+# Static files
+staticfiles/
+!.gitkeep
+
+# Environment variables
+.env
+
+# Development/IDE files
+.vscode/
+.idea/
+*.pyc
+*.swo
+*.swp
+*~
+
+# System files
+.DS_Store
+Thumbs.db
+# Django specific files
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+media/
+
+# Static files
+staticfiles/
+!.gitkeep
+
+# Environment variables
+.env
+
+# Development/IDE files
+.vscode/
+.idea/
+*.pyc
+*.swo
+*.swp
+*~
+
+# System files
+.DS_Store
+Thumbs.db
