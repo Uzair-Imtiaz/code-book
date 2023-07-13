@@ -1,9 +1,12 @@
-""" Django Views for the authentication app. """
+"""
+Views for user registration, login, and welcome in the 'authentication' app.
 
-from django.shortcuts import render, redirect, reverse
-from django.contrib.auth.models import User
+This file contains view classes and functions for handling user registration, login, and logout functionalities.
+"""
+
 from django.contrib.auth import authenticate, login
-
+from django.contrib.auth.models import User
+from django.shortcuts import redirect, render, reverse
 from django.views import View
 
 
@@ -23,30 +26,13 @@ class RegisterView(View):
     """
 
     def get(self, request):
-        """
-        Handle the GET request for user registration.
-
-        Parameters:
-        - request (HttpRequest): The HTTP GET request object.
-
-        Returns:
-        - HttpResponse: Rendered 'authentication/register.html' template with the 'page' context variable.
-        """
+        """ Handle the GET request for user registration. """
 
         page = 'Register'
         return render(request, 'authentication/register.html', {'page': page})
 
     def post(self, request):
-        """
-        Handle the POST request for user registration.
-
-        Parameters:
-        - request (HttpRequest): The HTTP POST request object.
-
-        Returns:
-        - HttpResponse: Redirects to the login page with a success message if registration is successful.
-        Renders 'authentication/sign_in.html' template with an error message if the username already exists.
-        """
+        """ Handle the POST request for user registration. """
 
         if request.method == 'POST':
             username = request.POST.get('username')
@@ -65,8 +51,7 @@ class RegisterView(View):
                 message = 'Username already exists. Sign in instead.'
                 return render(request, 'authentication/sign_in.html', {'message': message})
 
-            message = "registration successful"
-            return redirect(reverse('authentication:login'), {'message': message})
+            return redirect(reverse('authentication:create-profile'))
 
 
 class LoginView(View):
@@ -85,33 +70,13 @@ class LoginView(View):
     """
 
     def get(self, request):
-        """
-        Handle the GET request for user login.
-
-        Parameters:
-        - request (HttpRequest): The HTTP GET request object.
-
-        Returns:
-        - HttpResponse: Rendered 'authentication/sign_in.html' template with the 'page' context variable.
-
-        """
+        """ Handle the GET request for user login. """
 
         page = 'Login'
         return render(request, 'authentication/sign_in.html', {'page': page})
 
     def post(self, request):
-        """
-        Handle the POST request for user login.
-
-        Parameters:
-        - request (HttpRequest): The HTTP POST request object.
-
-        Returns:
-        - HttpResponse: Redirects to the 'authentication:welcome' URL with the authenticated user object as the 'user'
-        context variable if login is successful.
-        Renders 'authentication/sign_in.html' template with an error message if the login credentials are incorrect.
-
-        """
+        """ Handle the POST request for user login. """
 
         if request.method == 'POST':
             username = request.POST.get('username')
