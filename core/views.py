@@ -24,7 +24,7 @@ class AddOrEditProjectView(LoginRequiredMixin, View):
             form = ProjectForm(instance=project)
         else:
             form = ProjectForm()
-
+            
         context = {
             'page': page,
             'form': form,
@@ -62,7 +62,7 @@ class DeleteProjectView(LoginRequiredMixin, DeleteView):
     model = Project
     success_url = reverse_lazy('core:projects')
 
-
+    
 class AddReview(LoginRequiredMixin, CreateView):
     """ A view to handle the addition of new reviews by authenticated users """
 

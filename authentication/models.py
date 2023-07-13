@@ -16,6 +16,13 @@ class Profile(TimeStampedModel):
         null=True,
         help_text='The related user.'
     )
+    slug = models.SlugField(
+        max_length=50,
+        unique=True,
+        blank=True,
+        null=True,
+        help_text='Combination of id and name as a lookup field.'
+    )
     skills = SortedManyToManyField(
         'Skill',
         blank=True,
@@ -87,7 +94,15 @@ class Skill(TimeStampedModel):
         max_length=200,
         blank=True,
         null=True,
+        unique=True,
         help_text='The name of the skill.'
+    )
+    slug = models.SlugField(
+        max_length=50,
+        unique=True,
+        blank=True,
+        null=True,
+        help_text='Combination of id and name as a lookup field.'
     )
     description = models.TextField(
         blank=True,

@@ -40,12 +40,23 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'authentication.apps.AuthenticationConfig',
     'core.apps.CoreConfig',
+    'api.apps.ApiConfig',
     'model_utils',
     'bootstrap5',
     'django_forms_bootstrap',
     'crispy_bootstrap5',
     'sortedm2m',
+    'rest_framework',
+    'rest_framework.authtoken',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 4,
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 

@@ -1,11 +1,8 @@
-"""
-Views for user registration, login, and welcome in the 'authentication' app.
+""" This file contains view classes for the authentication app """
 
-This file contains view classes and functions for handling user registration, login, and logout functionalities.
-"""
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.contrib.auth.views import LogoutView
@@ -39,25 +36,24 @@ class RegisterView(View):
     def post(self, request):
         """ Handle the POST request for user registration. """
 
-        # import pdb; pdb.set_trace()
-        if request.method == 'POST':
-            username = request.POST.get('username')
-            email = request.POST.get('email')
-            password = request.POST.get('password')
-            first_name = request.POST.get('first_name')
-            last_name = request.POST.get('last_name')
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
 
-            if not User.objects.filter(username=username).exists():
-                user = User.objects.create_user(username=username, email=email, password=password)
-                user.first_name = first_name
-                user.last_name = last_name
-                user.save()
+        if not User.objects.filter(username=username).exists():
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.first_name = first_name
+            user.last_name = last_name
+            user.save()
 
-            else:
-                messages.warning(request, 'Username already exists. Sign in instead.')
-                return render(request, 'authentication/sign_in.html')
-            login(request, user)
-            return redirect(reverse('authentication:edit-profile'))
+        else:
+            messages.warning(request, 'Username already exists. Sign in instead.')
+            return render(request, 'authentication/sign_in.html')
+        
+        login(request, user)
+        return redirect(reverse('authentication:edit-profile'))
 
 
 class LoginView(View):
@@ -121,7 +117,6 @@ class CreateOrEditProfileView(LoginRequiredMixin, View):
 
         Receives the form submission and process the data to store it in the database as a profile instance.
         """
-
         user = request.user
         try:
             profile = user.profile
@@ -129,12 +124,13 @@ class CreateOrEditProfileView(LoginRequiredMixin, View):
             profile = None
 
         form = ProfileForm(request.POST, request.FILES, instance=profile)
+
         if form.is_valid():
             profile = form.save(commit=False)
             profile.user = user
-            profile.save()
             skills_ids = request.POST.getlist('skills')
             profile.skills.set(skills_ids)
+            profile.save()
             messages.success(request, 'Success!')
             return redirect(reverse('authentication:user-profile', kwargs={'pk': profile.id}))
 
