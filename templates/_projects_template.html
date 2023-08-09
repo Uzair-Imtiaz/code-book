@@ -1,0 +1,38 @@
+{% load static %}
+
+{% block specific_css %}
+<link rel="stylesheet" href="{% static 'core/css/projects.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    {% for project in projects %}
+    <div class="col-xs-12 col-sm-12 col-md-4 col-lg-4">
+      <a href="{% url 'core:project' project.id %}" style="text-decoration: none; color: black;">
+        <div class="card shadow">
+          <img src="{{project.featured_image.url}}" class="card-img-top" alt="...">
+          <div class="card-body">
+            <h2 class="card-title">{{project.title}}</h2>
+            <a href="{% url 'authentication:user-profile' project.user.profile.id %}"
+              style="text-decoration: none; color: cornflowerblue; font-style: italic;">
+              <h6 class="text-muted font-italic">By {{project.user.first_name}} {{project.user.last_name}}</h6>
+            </a>
+          </div>
+          <div class="card_skills row mx-auto mb-3">
+            {% if project.skills.all %}
+            {% for tag in project.skills.all %}
+            <div class="col-3 mb-2">
+              <span class="badge custom-badge">{{tag}}</span>
+            </div>
+            {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

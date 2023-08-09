@@ -3,6 +3,9 @@
 from django.contrib.auth.models import User
 from django.db import models
 from model_utils.models import TimeStampedModel
+from sortedm2m.fields import SortedManyToManyField
+
+from authentication.models import Skill
 
 
 class Project(TimeStampedModel):
@@ -27,9 +30,11 @@ class Project(TimeStampedModel):
         help_text='The detailed description of the project.'
     )
     featured_image = models.ImageField(
+        upload_to='projects/',
+        default='projects/default.jpg',
         blank=True,
         null=True,
-        help_text='The featured image(s) of the project.'
+        help_text='The featured image of the project.'
     )
     youtube_link = models.CharField(
         max_length=200,
@@ -48,6 +53,12 @@ class Project(TimeStampedModel):
         blank=True,
         null=True,
         help_text='The link to the source code of the project.'
+    )
+    skills = SortedManyToManyField(
+        Skill,
+        blank=True,
+        related_name='Project',
+        help_text='The relevant skills in the project.'
     )
 
     def __str__(self):
@@ -72,32 +83,6 @@ class Review(TimeStampedModel):
         null=True,
         help_text='The project that is being reviewed.'
     )
-    body = models.TextField(
-        blank=True,
-        null=True,
-        help_text='The content of the review.'
-    )
-
-
-class Vote(TimeStampedModel):
-    """ A model representing a vote for a project """
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        related_name='vote',
-        help_text='The user who voted.'
-    )
-    project = models.ForeignKey(
-        Project,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        related_name='project',
-        help_text='The project being voted on.'
-    )
     VoteChoices = models.TextChoices('Vote', 'Up, Down')
     vote = models.CharField(
         max_length=20,
@@ -105,6 +90,11 @@ class Vote(TimeStampedModel):
         choices=VoteChoices.choices,
         help_text='The vote choice (Up or Down).'
     )
+    body = models.TextField(
+        blank=True,
+        null=True,
+        help_text='The content of the review.'
+    )
 
     def __str__(self):
-        return self.choices
+        return self.vote
