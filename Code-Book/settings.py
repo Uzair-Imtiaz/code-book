@@ -41,7 +41,15 @@ INSTALLED_APPS = [
     'authentication.apps.AuthenticationConfig',
     'core.apps.CoreConfig',
     'model_utils',
+    'bootstrap5',
+    'django_forms_bootstrap',
+    'crispy_bootstrap5',
+    'sortedm2m',
 ]
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -120,6 +128,14 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+MEDIA_URL = 'images/'
+
+LOGIN_URL = '/login'
+LOGOUT_REDIRECT_URL = '/login'
+
+MEDIA_ROOT = os.path.join(BASE_DIR, 'images/')
+
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]

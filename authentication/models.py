@@ -3,24 +3,30 @@
 from django.contrib.auth.models import User
 from django.db import models
 from model_utils.models import TimeStampedModel
+from sortedm2m.fields import SortedManyToManyField
 
 
 class Profile(TimeStampedModel):
     """ Model representing a user profile """
 
     user = models.OneToOneField(
-        to=User,
+        User,
         on_delete=models.CASCADE,
         blank=True,
         null=True,
         help_text='The related user.'
     )
-    skills = models.ManyToManyField(
+    skills = SortedManyToManyField(
         'Skill',
         blank=True,
-        null=True,
         related_name='profile',
         help_text='The skills associated with the profile.'
+    )
+    short_intro = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text='A short intro or a post title.'
     )
     bio = models.TextField(
         blank=True,
@@ -28,23 +34,25 @@ class Profile(TimeStampedModel):
         help_text='A detailed bio of the user about themselves.'
     )
     profile_picture = models.ImageField(
+        upload_to='profiles/',
+        default='profiles/user-default.png',
         blank=True,
         null=True,
         help_text='A profile picture of the user.'
     )
-    github = models.URLField(
+    github = models.CharField(
         max_length=200,
         blank=True,
         null=True,
         help_text='The GitHub profile link.'
     )
-    linkedin = models.URLField(
+    linkedin = models.CharField(
         max_length=200,
         blank=True,
         null=True,
         help_text='The LinkedIn profile link.'
     )
-    youtube = models.URLField(
+    youtube = models.CharField(
         max_length=200,
         blank=True,
         null=True,
@@ -66,7 +74,10 @@ class Profile(TimeStampedModel):
     )
 
     def __str__(self):
-        return f"{self.user.first_name} {self.user.last_name}"
+        return self.user.get_full_name()
+
+    class Meta:
+        ordering = ['created']
 
 
 class Skill(TimeStampedModel):

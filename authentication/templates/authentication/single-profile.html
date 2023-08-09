@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block specific_css %}
+<link rel="stylesheet" href="{% static 'authentication/css/single-profile.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<section class="bg-light">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12 mb-4 mb-sm-5">
+        <div class="card card-style1 border-0">
+          <div class="card-body p-1-9 p-sm-2-3 p-md-6 p-lg-7">
+            <div class="row align-items-center">
+              <div class="col-lg-6 mb-4 mb-lg-0">
+                <img src="{{profile.profile_picture.url}}" width="500" alt="...">
+              </div>
+              <div class="col-lg-6 px-xl-10">
+                <div class="bg-secondary d-lg-inline-block py-1-9 px-1-9 px-sm-6 mb-1-9 rounded">
+                  <h3 class="h2 text-white mb-0">{{profile.user.get_full_name}}</h3>
+                  <span class="text-primary">{{profile.short_intro}}</span>
+                </div>
+                <ul class="list-unstyled mb-1-9">
+                  <li class="mb-2 mb-xl-3 display-28"><span
+                      class="display-26 text-secondary me-2 font-weight-600">Gender:</span> {{profile.gender}}
+                  </li>
+                  <li class="mb-2 mb-xl-3 display-28"><span
+                      class="display-26 text-secondary me-2 font-weight-600">Age:</span> {{age}}
+                  </li>
+                  <li class="mb-2 mb-xl-3 display-28"><span
+                      class="display-26 text-secondary me-2 font-weight-600">Email:</span> {{profile.user.email}}
+                  </li>
+                  {% if profile.linkedin is not None %}
+                  <a href="https://www.linkedin.com/in/{{profile.linkedin}}"
+                    style="text-decoration: none; color: black;">
+                    <li class="mb-2 mb-xl-3 display-28"><span
+                        class="display-26 text-secondary me-2 font-weight-600">LinkedIn:</span>
+                      https://www.linkedin.com/in/{{profile.linkedin}} <i class="fab fa-linkedin-in"></i>
+                    </li>
+                  </a>
+                  {% endif %}
+                  {% if profile.github is not None %}
+                  <a href="https://github.com/{{profile.github}}" style="text-decoration: none; color: black;">
+                    <li class="mb-2 mb-xl-3 display-28"><span
+                        class="display-26 text-secondary me-2 font-weight-600">Github:</span>
+                      https://github.com/{{profile.github}} <i class="fab fa-github"></i>
+                    </li>
+                  </a>
+                  {% endif %}
+                  {% if profile.youtube is not None %}
+                  <a href="https://www.youtube.com/{{profile.youtube}}" style="text-decoration: none; color: black;">
+                    <li class="display-28"><span class="display-26 text-secondary me-2 font-weight-600">Youtube:</span>
+                      https://www.youtube.com/{{profile.youtube}} <i class="fab fa-youtube"></i>
+                    </li>
+                  </a>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-12 mb-4 mb-sm-5">
+        <div>
+          <span class="section-title text-primary mb-3 mb-sm-4">About Me</span>
+          <p>{{profile.bio}}</p>
+        </div>
+      </div>
+      <div class="col-lg-12">
+        <div class="row">
+          <div class="col-lg-12 mb-4 mb-sm-5">
+            <div class="mb-4 mb-sm-5">
+              <span class="section-title text-primary mb-3 mb-sm-4">Skills</span>
+              <div class="progress-text">
+                {% for skill in skills %}
+                <div class="row">
+                  <div class="col-6">{{skill.name}}</div>
+                </div>
+                {% endfor %}
+                <div>
+                  <hr>
+                  <span class="section-title text-primary mb-3 mb-sm-4">Projects</span>
+
+                  {% include '_projects_template.html' %}
+
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="container">
+        <div class="row justify-content-end">
+          <div class="col-auto">
+            <a href="{% url 'authentication:edit-profile' %}">
+              <button class="btn btn-primary">Edit Profile</button>
+            </a>
+          </div>
+          <div class="col-auto">
+            <a href="{% url 'core:add-project' %}">
+              <button class="btn btn-warning">Add Project</button>
+            </a>
+          </div>
+        </div>
+      </div>
+
+</section>
+
+
+{% endblock %}

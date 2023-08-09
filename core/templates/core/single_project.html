@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block specific_css %}
+<link rel="stylesheet" href="{% static 'core/css/single-project.css' %}">
+{% endblock %}
+
+{% block content %}
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <div class="m-auto d-flex justify-content-center">
+        <h1 class="project-title mt-4 mb-3">{{project.title}}</h1>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-5">
+      <div class="project-info-box mt-0">
+        <h5>PROJECT DETAILS</h5>
+        <p class="mb-0 text-muted">{{project.description}}</p>
+      </div>
+
+      <div class="project-info-box">
+        <dl class="row">
+          <dt class="col-sm-3">Author</dt>
+          <dd class="col-sm-9 text-muted">
+            <a href="{% url 'authentication:user-profile' project.user.id %}">{{project.user.get_full_name}}</a>
+          </dd>
+          {% if project.source_code_link is not None %}
+          <dt class="col-sm-3">Source</dt>
+          <dd class="col-sm-9">
+            <a class="text-muted" href="{{project.source_code_link}}">{{project.source_code_link}}</a>
+          </dd>
+          {% endif %}
+          {% if project.demo_link is not None %}
+          <dt class="col-sm-3">Demo</dt>
+          <dd class="col-sm-9">
+            <a class="text-muted" href="{{project.demo_link}}">{{project.demo_link}}</a>
+          </dd>
+          {% endif %}
+      </div>
+
+
+    </div>
+
+    <div class="col-md-7">
+      <img src="{{project.featured_image.url}}" alt="project-image" class="rounded" width="700">
+      <div class="project-info-box">
+        <div class="col-12 mb-2 inline">
+          {% for tag in tags %}
+          <span class="badge custom-badge">{{tag}}</span>
+          {% endfor %}
+        </div>
+      </div>
+      {% if project.youtube_link is not None %}
+      <div class="project-info-box mt-0 mb-0 d-flex justify-content-center">
+        <div>
+          <i class="fab fa-youtube"></i>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="be-comment-block">
+    <h6 class="comments-title">Votes Ratio {{votes_ratio}}%</h6>
+    <h1 class="comments-title">Review{{ reviews.count|pluralize }} ({{ reviews.count }})</h1>
+    {% for review in reviews %}
+    <div class="be-comment">
+      <div class="be-img-comment">
+        <a href="{% url 'authentication:user-profile' review.user.id %}">
+          <img src="{{review.user.profile.profile_picture.url}}" alt="" class="be-ava-comment">
+        </a>
+      </div>
+      <div class="be-comment-content">
+
+        <span class="be-comment-name">
+          <a href="{% url 'authentication:user-profile' review.user.id %}">
+            {{review.user.get_full_name}}
+            {% if review.vote == 'Up' %}
+            <i class="fas fa-thumbs-up"></i>
+            {% else %}
+            <i class="fas fa-thumbs-down"></i>
+            {% endif %}
+          </a>
+        </span>
+        <span class="be-comment-time">
+          <i class="fa fa-clock-o"></i>
+          {{review.created}}
+        </span>
+
+        <p class="be-comment-text">
+          {{review.body}}
+        </p>
+      </div>
+    </div>
+    {% endfor %}
+
+    {% if request.user == project.user %}
+
+    {% elif user_reviewed %}
+    <p>You have already submitted your review for this project</p>
+
+    {% elif request.user.is_authenticated %}
+    <form class="form-block" method="post" action="{% url 'core:add-review' project.id %}">
+      {% csrf_token %}
+      {{form.vote}}
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="form-group">
+            {{form.body}}
+          </div>
+        </div>
+        <a class="d-flex justify-content-end">
+          <button class="btn btn-primary">Add review</button>
+        </a>
+      </div>
+    </form>
+    {% else %}
+    <a href="{% url 'authentication:login' %}?next={{request.path}}">Please login to leave a review</a>
+    {% endif %}
+  </div>
+</div>
+
+{% if request.user == project.user %}
+<div class="container">
+  <div class="row">
+    <div class="col-11 d-flex justify-content-end">
+      <a href="{% url 'core:delete-project' project.id %}">
+        <button class="btn btn-danger">Delete</button>
+      </a>
+    </div>
+    <div class="col-1 d-flex justify-content-end">
+      <a href="{% url 'core:edit-project' project.id %}">
+        <button class="btn btn-warning">Edit</button>
+      </a>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
