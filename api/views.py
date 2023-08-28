@@ -1,6 +1,7 @@
 """ This module contains the ViewSets """
 
 from django.contrib.auth import authenticate, login, logout
+from django.db.models import Q
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
@@ -50,7 +51,8 @@ class AuthViewSet(viewsets.GenericViewSet):
         if user:
             login(request, user)
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key}, status=status.HTTP_200_OK)
+            user = UserSerializer(user)
+            return Response({'token': token.key, 'user': user.data}, status=status.HTTP_200_OK)
 
         else:
             return Response({'error': 'Invalid credentials.'}, status=status.HTTP_401_UNAUTHORIZED)
@@ -94,7 +96,7 @@ class AuthViewSet(viewsets.GenericViewSet):
         }
         """
 
-        serializer = self.get_serializer(data=request.data)
+        serializer = UserSerializerPost(data=request.data)
 
         if serializer.is_valid():
             username = serializer.validated_data['username'].lower()
@@ -107,16 +109,16 @@ class AuthViewSet(viewsets.GenericViewSet):
                 return Response({'error': 'Weak password'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
             if User.objects.filter(username=username).exists():
-                return Response({'message': 'Username already exists. Please choose a different username.'},
+                return Response({'error': 'Username already exists. Please choose a different username.'},
                                 status=status.HTTP_409_CONFLICT)
 
             user = User.objects.create_user(**serializer.validated_data)
             user.set_password(password)
-            return Response({'message': 'Registration successful.', 'user': UserSerializer(user).data},
+            return Response({'user': UserSerializerPost(user).data},
                             status=status.HTTP_201_CREATED)
 
         else:
-            return Response({'error': 'Invalid data.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
@@ -155,7 +157,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         }
         """
 
-        skill_names = request.data.get('skills')
+        skill_names = request.data.get('skills').split(' ')
         serializer = self.get_serializer(data=request.data)
         user = request.user
 
@@ -168,6 +170,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
             add_skills_to_objects(profile, skill_names)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
+
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, *args, **kwargs):
@@ -196,13 +199,19 @@ class ProfileViewSet(viewsets.ModelViewSet):
         }
         """
 
-        skill_names = request.data.get('skills')
+        skill_names = request.data.get('skills').split(' ')
         try:
             profile = Profile.objects.get(user=request.user)
         except Profile.DoesNotExist:
             return Response({'error': 'Profile does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
+        current_skills = list(profile.skills.all())
         add_skills_to_objects(profile, skill_names)
+
+        for skill in current_skills:
+            if skill.name not in skill_names:
+                profile.skills.remove(skill)
+
         response = super().partial_update(request, *args, **kwargs)
         return response
 
@@ -211,6 +220,17 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
         user = self.request.user
         serializer.save(user=user)
+
+    def get_queryset(self):
+        """ Get the queryset of profiles filtered by the provided keyword """
+
+        search = self.request.query_params.get('search', '')
+        queryset = Profile.objects.filter(
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search) |
+            Q(skills__name__icontains=search)
+        ).distinct()
+        return queryset
 
     @action(methods=['get'], detail=True, url_name='profile_projects', url_path='projects',
             permission_classes=[permissions.IsAuthenticatedOrReadOnly])
@@ -278,7 +298,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         }
         """
 
-        skill_names = request.data.get('skills')
+        skill_names = request.data.get('skills').split(' ')
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():
@@ -286,6 +306,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             add_skills_to_objects(project, skill_names)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
+            print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self, request, *args, **kwargs):
@@ -319,14 +340,20 @@ class ProjectViewSet(viewsets.ModelViewSet):
         }
         """
 
-        skill_names = request.data.get('skills')
+        skill_names = request.data.get('skills').split(' ')
 
         try:
             project = self.get_object()
         except Project.DoesNotExist:
             return Response({'error': 'Project does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
+        current_skills = list(project.skills.all())
         add_skills_to_objects(project, skill_names)
+
+        for skill in current_skills:
+            if skill.name not in skill_names:
+                project.skills.remove(skill)
+
         response = super().partial_update(request, *args, **kwargs)
         return response
 
@@ -336,6 +363,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response({'Deleted': 'Object deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+
+    def get_queryset(self):
+        """ Get the queryset of projects filtered by the provided keyword """
+
+        search = self.request.query_params.get('search', '')
+
+        queryset = Project.objects.filter(
+            Q(title__icontains=search) |
+            Q(skills__name__icontains=search) |
+            Q(user__first_name__icontains=search) |
+            Q(user__last_name__icontains=search)
+        ).distinct()
+        return queryset
 
     @action(methods=['get'], detail=True, url_path='skills', url_name='project_skills')
     def project_skills(self, request, slug):
@@ -378,6 +418,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 validated_data = serializer.validated_data
                 review = Review.objects.create(**validated_data, user=request.user, project=project)
                 return Response(ReviewSerializer(review).data, status=status.HTTP_201_CREATED)
+
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

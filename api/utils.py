@@ -5,6 +5,7 @@ password strength.
 
 import re
 
+from api.serializers import SkillSerializer
 from authentication.models import Skill
 
 
@@ -19,7 +20,14 @@ def add_skills_to_objects(instance, skill_names):
     if skill_names is not None:
 
         for skill_name in skill_names:
-            skill, _ = Skill.objects.get_or_create(name__iexact=skill_name)
+            try:
+                skill = Skill.objects.get(name__iexact=skill_name)
+            except Skill.DoesNotExist:
+                serializer = SkillSerializer(data={'name': skill_name})
+                if serializer.is_valid():
+                    skill = serializer.save()
+                else:
+                    return
 
             if skill not in instance.skills.all():
                 instance.skills.add(skill)

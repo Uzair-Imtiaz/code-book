@@ -13,5 +13,5 @@ router.register(r'auth', views.AuthViewSet, basename='auth')
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('reviews/', views.ReviewAPIView.as_view(), name='reviews')
+    path('reviews/', views.ReviewAPIView.as_view(), name='reviews'),
 ]

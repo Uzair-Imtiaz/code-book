@@ -8,14 +8,38 @@ from authentication.models import Profile, Skill
 from core.models import Project, Review
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """ Serializer for the User model """
+class UserSerializerPost(serializers.ModelSerializer):
+    """ User model serializer for post requests on users """
 
     class Meta:
         model = User
         fields = [
-            'username', 'email', 'password', 'first_name', 'last_name'
+            'username', 'password', 'email', 'first_name', 'last_name'
         ]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """ Serializer for the User model for the response """
+
+    profile_slug = serializers.SerializerMethodField()
+    profile_picture = serializers.SerializerMethodField()
+    class Meta:
+        model = User
+        fields = [
+            'username', 'email', 'first_name', 'last_name', 'profile_slug', 'profile_picture',
+        ]
+
+    def get_profile_slug(self, obj):
+        try:
+            return obj.profile.slug
+        except Profile.DoesNotExist:
+            return None
+
+    def get_profile_picture(self, obj):
+        try:
+            return obj.profile.profile_picture.url
+        except Profile.DoesNotExist:
+            return None
 
 
 class SkillSerializer(serializers.ModelSerializer):
@@ -27,11 +51,11 @@ class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
         fields = ['id', 'name', 'slug', 'description', 'profile', 'project']
+        read_only_field = ['slug']
 
     def create(self, validated_data):
         """ Overridden to make sure the name is in title case and create a slug field """
 
-        import pdb; pdb.set_trace()
         name = validated_data['name'] = validated_data['name'].title()
         if Skill.objects.filter(name=name).exists():
             raise serializers.ValidationError({"name": ["Skill with this name already exists."]})
@@ -67,10 +91,11 @@ class ProjectSerializer(serializers.ModelSerializer):
     """ Serializer for the Project model """
 
     review = serializers.SerializerMethodField()
-    user = serializers.ReadOnlyField(source='user.username')
+    user = UserSerializer(read_only=True)
     skills = SkillSerializer(many=True, read_only=True)
 
     class Meta:
+        read_only_field = ['slug']
         model = Project
         fields = '__all__'
 
@@ -103,13 +128,13 @@ class ProjectSerializer(serializers.ModelSerializer):
 class ProfileSerializer(serializers.ModelSerializer):
     """ Serializer for the Profile model """
 
-    user = serializers.ReadOnlyField(source='user.username')
+    user = UserSerializer(read_only=True)
     skills = SkillSerializer(many=True, read_only=True)
     project = ProjectSerializer(source='user.project', many=True, required=False)
 
     class Meta:
         model = Profile
-        exclude = ['bio']
+        exclude = ['created', 'modified']
         read_only_field = ['slug']
 
     def create(self, validated_data):
@@ -137,9 +162,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     """ Serializer for the Review model """
 
-    user = serializers.ReadOnlyField(source='user.username')
+    user = UserSerializer(read_only=True)
     project = serializers.StringRelatedField()
 
     class Meta:
         model = Review
-        exclude = ['created', 'modified']
+        exclude = ['modified']
+
