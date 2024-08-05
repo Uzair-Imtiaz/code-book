@@ -24,6 +24,13 @@ class Project(TimeStampedModel):
         null=True,
         help_text='The title of the project.'
     )
+    slug = models.SlugField(
+        blank=True,
+        null=True,
+        max_length=50,
+        unique=True,
+        help_text='Combination of id and title as a lookup field.'
+    )
     description = models.TextField(
         blank=True,
         null=True,
@@ -61,6 +68,9 @@ class Project(TimeStampedModel):
         help_text='The relevant skills in the project.'
     )
 
+    class Meta:
+        ordering = ['created']
+
     def __str__(self):
         return self.title
 
@@ -81,6 +91,7 @@ class Review(TimeStampedModel):
         on_delete=models.CASCADE,
         blank=True,
         null=True,
+        related_name='review',
         help_text='The project that is being reviewed.'
     )
     VoteChoices = models.TextChoices('Vote', 'Up, Down')
@@ -95,6 +106,9 @@ class Review(TimeStampedModel):
         null=True,
         help_text='The content of the review.'
     )
+
+    class Meta:
+        ordering = ['created']
 
     def __str__(self):
         return self.vote
